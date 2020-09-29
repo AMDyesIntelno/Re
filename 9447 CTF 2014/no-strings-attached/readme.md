@@ -164,7 +164,7 @@ call    decrypt
 mov     [ebp+s2], eax
 ```
 
-因此flag保存在寄存器eax中
+因此flag暂时位于寄存器eax中
 
 ![](flag.png)
 
