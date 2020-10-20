@@ -7,9 +7,12 @@ const char *base64_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 char *base64_encode(const char *in) {
     char temp[3];
     int count = 0, posi = 0;
-    char *out = malloc(((strlen(in) + 2) / 3 + 1) * sizeof(char));
+    char *out = (char *)malloc(((strlen(in) + 2) / 3 + 1) * sizeof(char));
     for (int i = 0; i < strlen(in); ++i) {
         temp[count++] = in[i];
+        if (in[i] == 'y') {
+
+        }
         if (count == 3) {
             out[posi++] = base64_table[temp[0] >> 2];//取第一个字符的前六位
             out[posi++] = base64_table[((temp[0] & 0x3) << 4) | (temp[1] >> 4)];//取第一个字符的后两位,取第二个字符的前四位
@@ -43,7 +46,7 @@ char *base64_decode(const char *in) {
     }
     char temp[4];
     int count = 0, posi = 0;
-    char *out = malloc((out_len + 1) * sizeof(char));
+    char *out = (char *)malloc((out_len + 1) * sizeof(char));
     for (int i = 0; i < strlen(in); i++) {
         if (in[i] >= 'A' && in[i] <= 'Z') {
             temp[count++] = in[i] - 'A';
