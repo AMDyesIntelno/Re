@@ -1,5 +1,7 @@
 # 动态分析
 
+## 通过汇编分析
+
 main函数
 
 ```cpp
@@ -276,3 +278,135 @@ loc_600B49
 ![](xor.png)
 
 ```py
+fmcd=[102, 109, 99, 100, 127, 107, 55, 100, 59, 86, 96, 59, 110, 112]
+for i in range(len(fmcd)):
+    print(chr(fmcd[i]^i),end="")
+```
+
+`flag{n1c3_j0b}`
+
+## 动态调试是重新生成伪代码
+
+在第12行,即自解密完成后的地方下断点,进行动态调试,使用程序自身的解密程序进行解密
+
+将有红色报错的代码按`U`(取消原来定义),再按`C`(重新生成汇编代码),选中`600B00-600BB5`(judge的起止位置)按`P`(重新生成function),这时就可以
+按`F5`生成judge的伪代码了
+
+```cpp
+signed __int64 __fastcall judge(__int64 a1)
+{
+  char v2; // [rsp+8h] [rbp-20h]
+  char v3; // [rsp+9h] [rbp-1Fh]
+  char v4; // [rsp+Ah] [rbp-1Eh]
+  char v5; // [rsp+Bh] [rbp-1Dh]
+  char v6; // [rsp+Ch] [rbp-1Ch]
+  char v7; // [rsp+Dh] [rbp-1Bh]
+  char v8; // [rsp+Eh] [rbp-1Ah]
+  char v9; // [rsp+Fh] [rbp-19h]
+  char v10; // [rsp+10h] [rbp-18h]
+  char v11; // [rsp+11h] [rbp-17h]
+  char v12; // [rsp+12h] [rbp-16h]
+  char v13; // [rsp+13h] [rbp-15h]
+  char v14; // [rsp+14h] [rbp-14h]
+  char v15; // [rsp+15h] [rbp-13h]
+  int i; // [rsp+24h] [rbp-4h]
+
+  v2 = 102;
+  v3 = 109;
+  v4 = 99;
+  v5 = 100;
+  v6 = 127;
+  v7 = 107;
+  v8 = 55;
+  v9 = 100;
+  v10 = 59;
+  v11 = 86;
+  v12 = 96;
+  v13 = 59;
+  v14 = 110;
+  v15 = 112;
+  for ( i = 0; i <= 13; ++i )
+    *(_BYTE *)(i + a1) ^= i;
+  for ( i = 0; i <= 13; ++i )
+  {
+    if ( *(_BYTE *)(i + a1) != *(&v2 + i) )
+      return 0LL;
+  }
+  return 1LL;
+}
+```
+
+同样得到exp
+
+# 静态分析
+
+judge方法是判断的主要逻辑,在第15行时调用判断,但无法直接进行静态分析,因为judge模块已经被进行了加密,在第7-11行先进行smc自解密,后面才能正常运行,所以按照7-11行的逻辑对judge模块进行解密,使用IDApython手动解密
+
+```py
+posi=0x600B00
+for i in range(182):
+    PatchByte(posi+i,Byte(posi+i)^0xC)
+```
+
+![](patch.png)
+
+![](patch_finish.png)
+
+Patch后,将有红色报错的代码按`U`(取消原来定义),再按`C`(重新生成汇编代码),选中`600B00-600BB5`(judge的起止位置)按`P`(重新生成function),这时就可以
+按`F5`生成judge的伪代码了
+
+```cpp
+signed __int64 __fastcall judge(__int64 a1)
+{
+  char v2; // [rsp+8h] [rbp-20h]
+  char v3; // [rsp+9h] [rbp-1Fh]
+  char v4; // [rsp+Ah] [rbp-1Eh]
+  char v5; // [rsp+Bh] [rbp-1Dh]
+  char v6; // [rsp+Ch] [rbp-1Ch]
+  char v7; // [rsp+Dh] [rbp-1Bh]
+  char v8; // [rsp+Eh] [rbp-1Ah]
+  char v9; // [rsp+Fh] [rbp-19h]
+  char v10; // [rsp+10h] [rbp-18h]
+  char v11; // [rsp+11h] [rbp-17h]
+  char v12; // [rsp+12h] [rbp-16h]
+  char v13; // [rsp+13h] [rbp-15h]
+  char v14; // [rsp+14h] [rbp-14h]
+  char v15; // [rsp+15h] [rbp-13h]
+  int i; // [rsp+24h] [rbp-4h]
+
+  v2 = 102;
+  v3 = 109;
+  v4 = 99;
+  v5 = 100;
+  v6 = 127;
+  v7 = 107;
+  v8 = 55;
+  v9 = 100;
+  v10 = 59;
+  v11 = 86;
+  v12 = 96;
+  v13 = 59;
+  v14 = 110;
+  v15 = 112;
+  for ( i = 0; i <= 13; ++i )
+    *(_BYTE *)(i + a1) ^= i;
+  for ( i = 0; i <= 13; ++i )
+  {
+    if ( *(_BYTE *)(i + a1) != *(&v2 + i) )
+      return 0LL;
+  }
+  return 1LL;
+}
+```
+
+```cpp
+  for ( i = 0; i <= 13; ++i )
+    *(_BYTE *)(i + a1) ^= i;
+  for ( i = 0; i <= 13; ++i )
+  {
+    if ( *(_BYTE *)(i + a1) != *(&v2 + i) )
+      return 0LL;
+  }
+```
+
+得到与前面相同的exp
