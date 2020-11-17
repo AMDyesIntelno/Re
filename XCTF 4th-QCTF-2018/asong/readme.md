@@ -377,3 +377,5 @@ get_frequency=[0,0,0,0,0,0,0,0,0,0,104,30,15,29,169,19,38,67,60,0,20,39,28,118,1
 for i in before_convert:
     print(dic[get_frequency.index(i)],end="")
 ```
+
+flag:`QCTF{that_girl_saying_no_for_your_vindicate}`
